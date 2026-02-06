@@ -574,6 +574,28 @@ a {
     color: var(--gold);
 }
 
+.events-note {
+    background-color: var(--gold);
+    padding: 25px 30px;
+    border-radius: 8px;
+    margin-top: 40px;
+    border-left: 4px solid var(--burgundy);
+}
+
+.events-note p {
+    color: var(--dark-gray);
+    font-size: 15px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.events-note i {
+    color: var(--burgundy);
+    font-size: 20px;
+}
+
 /* ============================================
    AGE GROUPS SECTION
    ============================================ */
@@ -586,6 +608,7 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
+    margin-bottom: 50px;
 }
 
 .age-group-card {
@@ -626,6 +649,42 @@ a {
     margin-bottom: 25px;
 }
 
+.schedule-info {
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.schedule-day {
+    color: var(--dark-gray);
+    font-size: 15px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.schedule-day:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-day i {
+    color: var(--burgundy);
+    margin-right: 8px;
+}
+
+.schedule-day strong {
+    color: var(--burgundy);
+}
+
+.winter-time {
+    display: block;
+    font-size: 13px;
+    color: var(--gray);
+    font-style: italic;
+    margin-left: 24px;
+    margin-top: 3px;
+}
+
 .age-group-card ul {
     list-style: none;
 }
@@ -653,6 +712,45 @@ a {
     border-radius: 20px;
     font-size: 12px;
     font-weight: 700;
+}
+
+.league-info {
+    background: linear-gradient(135deg, var(--burgundy), #7a1219);
+    padding: 40px;
+    border-radius: 10px;
+    color: var(--white);
+    text-align: center;
+}
+
+.league-info h3 {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: var(--gold);
+}
+
+.league-info h3 i {
+    margin-right: 10px;
+}
+
+.league-info p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.league-info ul {
+    list-style: none;
+    display: inline-block;
+    text-align: left;
+}
+
+.league-info li {
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+.league-info strong {
+    color: var(--gold);
 }
 
 /* ============================================
