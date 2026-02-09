@@ -177,22 +177,13 @@ inquiryType.addEventListener('change', function() {
     }
 });
 
-// Form submission handling
-contactForm.addEventListener('submit', async function(e) {
+// Form submission handling - WHATSAPP VERSION (CROSS-PLATFORM OPTIMIZED)
+contactForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     // Hide previous messages
     formSuccess.style.display = 'none';
     formError.style.display = 'none';
-    
-    // Show loading state
-    const btnText = document.querySelector('.btn-text');
-    const btnLoader = document.querySelector('.btn-loader');
-    const submitBtn = document.querySelector('.btn-submit');
-    
-    btnText.style.display = 'none';
-    btnLoader.style.display = 'inline-block';
-    submitBtn.disabled = true;
     
     // Get form data
     const formData = new FormData(contactForm);
@@ -201,68 +192,189 @@ contactForm.addEventListener('submit', async function(e) {
         data[key] = value;
     });
     
-    // Simulate form submission (replace with actual backend endpoint)
+    // Validate required fields
+    if (!data.parentName || !data.phone || !data.email || !data.inquiryType || !data.message) {
+        formError.querySelector('p').textContent = 'Please fill in all required fields marked with *';
+        formError.style.display = 'flex';
+        formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+    
+    // Additional validation for registration
+    if (data.inquiryType === 'registration') {
+        if (!data.childName || !data.childAge || !data.gender) {
+            formError.querySelector('p').textContent = 'Please fill in all child information fields for registration.';
+            formError.style.display = 'flex';
+            formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+    }
+    
+    // Build WhatsApp message
+    let whatsappMessage = `🏀 *NEW BASKETBALL ACADEMY INQUIRY*\n\n`;
+    whatsappMessage += `📋 *Inquiry Type:* ${formatInquiryType(data.inquiryType)}\n\n`;
+    whatsappMessage += `👤 *Parent/Guardian Information:*\n`;
+    whatsappMessage += `Name: ${data.parentName}\n`;
+    whatsappMessage += `Phone: ${data.phone}\n`;
+    whatsappMessage += `Email: ${data.email}\n\n`;
+    
+    // Add child information if registration
+    if (data.inquiryType === 'registration' && data.childName) {
+        whatsappMessage += `👶 *Child's Information:*\n`;
+        whatsappMessage += `Name: ${data.childName}\n`;
+        whatsappMessage += `Age: ${data.childAge} years old\n`;
+        whatsappMessage += `Gender: ${capitalizeFirst(data.gender)}\n`;
+        if (data.experience) {
+            whatsappMessage += `Experience: ${capitalizeFirst(data.experience)}\n`;
+        }
+        if (data.preferredProgram) {
+            whatsappMessage += `Preferred Program: ${formatProgram(data.preferredProgram)}\n`;
+        }
+        whatsappMessage += `\n`;
+    }
+    
+    // Add message
+    whatsappMessage += `💬 *Message:*\n${data.message}\n\n`;
+    
+    // Add how they heard about us
+    if (data.hearAbout) {
+        whatsappMessage += `📢 *How they heard about us:* ${capitalizeFirst(data.hearAbout)}\n`;
+    }
+    
+    // WhatsApp number (TEST: 0832688029, PRODUCTION: 0839682191)
+    const whatsappNumber = '27745192332'; // Change to '27839682191' for production
+    
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    
+    // Detect device and browser to use appropriate WhatsApp URL
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
+    let whatsappURL;
+    
+    if (isMobile) {
+        // Mobile devices - Use app deep link
+        if (isIOS) {
+            // iOS - Try app first, fallback to web
+            whatsappURL = `whatsapp://send?phone=${whatsappNumber}&text=${encodedMessage}`;
+        } else if (isAndroid) {
+            // Android - Use intent that works on all Android browsers
+            whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+        } else {
+            // Other mobile OS
+            whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+        }
+    } else {
+        // Desktop - Use WhatsApp Web (works on all browsers)
+        whatsappURL = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+    }
+    
+    // Try to open WhatsApp
     try {
-        // This is where you would send data to your backend
-        // Example: await fetch('/api/contact', { method: 'POST', body: JSON.stringify(data) })
+        const whatsappWindow = window.open(whatsappURL, '_blank');
         
-        // For demonstration, we'll simulate a successful submission
-        await simulateFormSubmission(data);
-        
-        // Show success message
-        formSuccess.style.display = 'flex';
+        // Check if popup was blocked
+        if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed == 'undefined') {
+            // Popup blocked - show manual link
+            showManualWhatsAppLink(whatsappURL, isMobile);
+        } else {
+            // Success - show confirmation
+            showSuccessMessage(whatsappURL, isMobile);
+        }
+    } catch (error) {
+        // Error opening WhatsApp - show manual link
+        showManualWhatsAppLink(whatsappURL, isMobile);
+    }
+    
+    // Reset form after submission
+    setTimeout(() => {
         contactForm.reset();
         childInfoSection.style.display = 'none';
-        
-        // Scroll to success message
-        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Animate success message
-        gsap.from(formSuccess, {
-            opacity: 0,
-            y: 20,
-            duration: 0.5,
-            ease: 'power2.out'
-        });
-        
-    } catch (error) {
-        // Show error message
-        formError.style.display = 'flex';
-        
-        // Scroll to error message
-        formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Animate error message
-        gsap.from(formError, {
-            opacity: 0,
-            y: 20,
-            duration: 0.5,
-            ease: 'power2.out'
-        });
-    } finally {
-        // Reset button state
-        btnText.style.display = 'inline-block';
-        btnLoader.style.display = 'none';
-        submitBtn.disabled = false;
-    }
+    }, 3000);
 });
 
-// Simulate form submission (remove in production and use actual backend)
-function simulateFormSubmission(data) {
-    return new Promise((resolve, reject) => {
-        // Log form data to console for testing
-        console.log('Form Data Submitted:', data);
-        
-        // Simulate network delay
-        setTimeout(() => {
-            // Simulate 90% success rate
-            if (Math.random() > 0.1) {
-                resolve();
-            } else {
-                reject(new Error('Submission failed'));
-            }
-        }, 2000);
+// Show success message with fallback link
+function showSuccessMessage(whatsappURL, isMobile) {
+    const deviceText = isMobile ? 'WhatsApp app' : 'WhatsApp Web';
+    
+    formSuccess.querySelector('p').innerHTML = `
+        ✅ Your message has been prepared!<br><br>
+        ${deviceText} should open automatically. Please click "Send" to complete your inquiry.<br><br>
+        <small>If it didn't open, <a href="${whatsappURL}" target="_blank" style="color: #28a745; font-weight: bold; text-decoration: underline;">click here to open WhatsApp</a></small>
+    `;
+    formSuccess.style.display = 'flex';
+    formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Animate success message
+    gsap.from(formSuccess, {
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out'
     });
+}
+
+// Show manual WhatsApp link if auto-open failed
+function showManualWhatsAppLink(whatsappURL, isMobile) {
+    const deviceText = isMobile ? 'WhatsApp app' : 'WhatsApp Web';
+    
+    formSuccess.querySelector('p').innerHTML = `
+        📱 Your message is ready!<br><br>
+        <a href="${whatsappURL}" target="_blank" class="btn-whatsapp-manual" style="
+            display: inline-block;
+            background-color: #25D366;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 15px 0;
+        ">
+            <i class="fab fa-whatsapp"></i> Click Here to Open ${deviceText}
+        </a><br><br>
+        <small>Then click "Send" to complete your inquiry</small>
+    `;
+    formSuccess.style.display = 'flex';
+    formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Animate success message
+    gsap.from(formSuccess, {
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out'
+    });
+}
+
+// Helper function to format inquiry type
+function formatInquiryType(type) {
+    const types = {
+        'registration': 'Register My Child',
+        'enquiry': 'Make an Enquiry',
+        'question': 'Ask a Question',
+        'visit': 'Schedule a Visit',
+        'other': 'Other'
+    };
+    return types[type] || type;
+}
+
+// Helper function to format program
+function formatProgram(program) {
+    const programs = {
+        '6-12': 'Foundation Program (6-12 years)',
+        '13-15': 'Development Program (13-15 years)',
+        '15-18': 'Advanced Program (15-18 years)'
+    };
+    return programs[program] || program;
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // ============================================
@@ -372,50 +484,31 @@ console.log('%c Basketball Academy - Contact Page ', 'background: #5B0E14; color
 console.log('%c Developed by Jay K | jeremiahkazadi9@gmail.com ', 'background: #F1E194; color: #5B0E14; font-size: 12px; padding: 5px;');
 
 // ============================================
-// FORM DATA TO EMAIL (BACKEND INTEGRATION)
+// WHATSAPP INTEGRATION COMPLETE
 // ============================================
 
 /*
-BACKEND INTEGRATION NOTES FOR DEVELOPER:
+HOW IT WORKS:
 
-To make this form functional, you need to:
+1. User fills out the form
+2. Form data is formatted into a nice WhatsApp message
+3. WhatsApp opens with pre-filled message
+4. User just clicks "Send" in WhatsApp
+5. Message goes directly to your WhatsApp number
 
-1. SET UP EMAIL SERVICE:
-   - Use FormSubmit.co (easiest, free)
-   - Or use EmailJS
-   - Or build your own PHP/Node.js backend
+TO CHANGE TO PRODUCTION NUMBER:
+- Find this line: const whatsappNumber = '27832688029';
+- Change to: const whatsappNumber = '27839682191';
 
-2. FORMSUBMIT.CO SETUP (RECOMMENDED):
-   Replace the simulateFormSubmission function with:
-   
-   contactForm.setAttribute('action', 'https://formsubmit.co/ballacademy.za@gmail.com');
-   contactForm.setAttribute('method', 'POST');
-   
-   Add these hidden fields to the form:
-   <input type="hidden" name="_subject" value="New Basketball Academy Inquiry">
-   <input type="hidden" name="_captcha" value="false">
-   <input type="hidden" name="_next" value="https://basketballacademies.com/thank-you.html">
+ADVANTAGES:
+✅ No backend needed
+✅ No email setup
+✅ Instant notifications on phone
+✅ Can reply directly in WhatsApp
+✅ See sender's phone number
+✅ Simple and reliable
+✅ Works on mobile and desktop
 
-3. EMAILJS SETUP:
-   - Sign up at emailjs.com
-   - Get your Service ID, Template ID, and User ID
-   - Replace simulateFormSubmission with EmailJS send function
-
-4. CUSTOM BACKEND:
-   - Create PHP/Node.js endpoint
-   - Use fetch() to POST data
-   - Handle email sending on backend
-
-EXAMPLE WITH FORMSUBMIT:
-
-contactForm.addEventListener('submit', async function(e) {
-    // Remove e.preventDefault() to allow normal form submission
-    
-    btnText.style.display = 'none';
-    btnLoader.style.display = 'inline-block';
-    submitBtn.disabled = true;
-    
-    // Form will submit to FormSubmit.co automatically
-});
-
+The form will open WhatsApp with a perfectly formatted message
+containing all the inquiry details!
 */
