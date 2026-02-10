@@ -287,3 +287,196 @@ if (window.innerWidth < 768) {
 // ============================================
 console.log('%c Basketball Academy Website ', 'background: #5B0E14; color: #F1E194; font-size: 16px; padding: 10px;');
 console.log('%c Developed by Jay K | jeremiahkazadi9@gmail.com ', 'background: #F1E194; color: #5B0E14; font-size: 12px; padding: 5px;');
+
+// ============================================
+// GOOGLE CALENDAR INTEGRATION FOR EVENTS
+// ============================================
+
+/*
+HOW IT WORKS:
+1. Client creates/updates events in Google Calendar
+2. Makes calendar public with specific sharing settings
+3. Gets Calendar ID
+4. Paste Calendar ID below
+5. Website automatically pulls events and displays them
+
+SETUP INSTRUCTIONS FOR CLIENT:
+1. Go to Google Calendar (calendar.google.com)
+2. Create a new calendar called "Basketball Academy Events"
+3. Add events with:
+   - Title
+   - Date
+   - Time
+   - Location
+   - Description
+4. Make calendar public:
+   - Settings → Share with specific people → Make available to public
+5. Get Calendar ID:
+   - Settings → Integrate calendar → Calendar ID
+   - Example: abc123@group.calendar.google.com
+6. Paste Calendar ID in the variable below
+*/
+
+// ============================================
+// CONFIGURATION
+// ============================================
+
+// PASTE YOUR GOOGLE CALENDAR ID HERE
+const CALENDAR_ID = 'https://calendar.google.com/calendar/embed?src=0a12742a00dfd19247529f47d24a1c25f6b5636d597f29a5ed73f565f4b8627f%40group.calendar.google.com&ctz=Africa%2FJohannesburg';
+
+// PASTE YOUR GOOGLE API KEY HERE (Free - get from Google Cloud Console)
+const API_KEY = 'AIzaSyAq82AoypW1_AdSRmM4V24eLfB8wIwEeRM';
+
+// Number of events to display
+const MAX_EVENTS = 3;
+
+// ============================================
+// FETCH EVENTS FROM GOOGLE CALENDAR
+// ============================================
+
+async function fetchCalendarEvents() {
+    try {
+        // Build Google Calendar API URL
+        const now = new Date().toISOString();
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?key=${API_KEY}&timeMin=${now}&maxResults=${MAX_EVENTS}&singleEvents=true&orderBy=startTime`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch calendar events');
+        }
+        
+        const data = await response.json();
+        return data.items || [];
+        
+    } catch (error) {
+        console.error('Error fetching calendar events:', error);
+        return null;
+    }
+}
+
+// ============================================
+// RENDER EVENTS ON PAGE
+// ============================================
+
+function renderEvents(events) {
+    const eventsGrid = document.querySelector('.events-grid');
+    
+    if (!eventsGrid) {
+        console.error('Events grid not found');
+        return;
+    }
+    
+    // Clear existing events
+    eventsGrid.innerHTML = '';
+    
+    if (!events || events.length === 0) {
+        eventsGrid.innerHTML = `
+            <div class="no-events">
+                <p><i class="fas fa-calendar-times"></i> No upcoming events at the moment. Check back soon!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Render each event
+    events.forEach(event => {
+        const eventCard = createEventCard(event);
+        eventsGrid.appendChild(eventCard);
+    });
+}
+
+// ============================================
+// CREATE EVENT CARD HTML
+// ============================================
+
+function createEventCard(event) {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    
+    // Parse date
+    const startDate = event.start.dateTime ? new Date(event.start.dateTime) : new Date(event.start.date);
+    const month = startDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const day = startDate.getDate();
+    
+    // Parse time
+    let timeString = '';
+    if (event.start.dateTime) {
+        const startTime = startDate.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const endDate = event.end.dateTime ? new Date(event.end.dateTime) : null;
+        const endTime = endDate ? endDate.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+        timeString = endTime ? `${startTime} - ${endTime}` : startTime;
+    } else {
+        timeString = 'All Day';
+    }
+    
+    // Get location or use default
+    const location = event.location || 'Crawford International Sandton College, Waterstone Drive';
+    
+    // Get description or use default
+    const description = event.description || event.summary;
+    
+    // Build card HTML
+    card.innerHTML = `
+        <div class="event-date">
+            <span class="month">${month}</span>
+            <span class="day">${day}</span>
+        </div>
+        <div class="event-content">
+            <h3>${event.summary}</h3>
+            <p class="event-location"><i class="fas fa-map-marker-alt"></i> ${location}</p>
+            <p class="event-time"><i class="far fa-clock"></i> ${timeString}</p>
+            <p class="event-description">${description}</p>
+            <a href="Contact/contact.html" class="event-link">Register Now <i class="fas fa-arrow-right"></i></a>
+        </div>
+    `;
+    
+    return card;
+}
+
+// ============================================
+// INITIALIZE CALENDAR INTEGRATION
+// ============================================
+
+async function initCalendarEvents() {
+    // Check if API key and Calendar ID are configured
+    if (CALENDAR_ID === 'YOUR_CALENDAR_ID@group.calendar.google.com' || 
+        API_KEY === 'YOUR_API_KEY_HERE') {
+        console.log('Google Calendar not configured yet. Using default events.');
+        return;
+    }
+    
+    // Show loading state
+    const eventsGrid = document.querySelector('.events-grid');
+    if (eventsGrid) {
+        eventsGrid.innerHTML = '<div class="loading-events"><i class="fas fa-spinner fa-spin"></i> Loading events...</div>';
+    }
+    
+    // Fetch and render events
+    const events = await fetchCalendarEvents();
+    
+    if (events) {
+        renderEvents(events);
+    } else {
+        // If fetch fails, keep default events
+        console.log('Using default events due to fetch error');
+    }
+}
+
+// ============================================
+// RUN ON PAGE LOAD
+// ============================================
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCalendarEvents);
+} else {
+    initCalendarEvents();
+}
+
+// ============================================
+// EXPORT FOR TESTING
+// ============================================
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { fetchCalendarEvents, renderEvents, createEventCard };
+}

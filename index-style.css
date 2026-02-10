@@ -151,31 +151,59 @@ a {
     padding: 12px 30px;
 }
 
-/* Hamburger Menu */
+/* Hamburger Menu - Unique Animation */
 .hamburger {
     display: none;
     flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
     cursor: pointer;
-    gap: 5px;
+    width: 30px;
+    height: 30px;
+    position: relative;
 }
 
 .hamburger span {
     width: 25px;
     height: 3px;
     background-color: var(--burgundy);
-    transition: var(--transition-fast);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    position: absolute;
+    right: 0;
 }
 
+.hamburger span:nth-child(1) {
+    top: 6px;
+    width: 25px;
+}
+
+.hamburger span:nth-child(2) {
+    top: 13px;
+    width: 20px;
+}
+
+.hamburger span:nth-child(3) {
+    top: 20px;
+    width: 15px;
+}
+
+/* Active state - Unique X transformation */
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(7px, 7px);
+    top: 13px;
+    transform: rotate(45deg);
+    width: 25px;
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
+    transform: translateX(20px);
+    width: 25px;
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
+    top: 13px;
+    transform: rotate(-45deg);
+    width: 25px;
 }
 
 /* ============================================
@@ -596,6 +624,31 @@ a {
     font-size: 20px;
 }
 
+/* Loading and No Events States */
+.loading-events,
+.no-events {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background-color: var(--white);
+    border-radius: 10px;
+    color: var(--gray);
+}
+
+.loading-events i,
+.no-events i {
+    font-size: 48px;
+    color: var(--burgundy);
+    margin-bottom: 20px;
+    display: block;
+}
+
+.loading-events p,
+.no-events p {
+    font-size: 18px;
+    color: var(--gray);
+}
+
 /* ============================================
    AGE GROUPS SECTION
    ============================================ */
@@ -973,12 +1026,13 @@ a {
         right: -100%;
         width: 300px;
         height: calc(100vh - 80px);
-        background-color: var(--white);
+        background: linear-gradient(135deg, var(--white) 0%, #f9f9f9 100%);
         flex-direction: column;
         padding: 40px;
-        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
-        transition: right 0.3s ease;
+        box-shadow: -5px 0 30px rgba(91, 14, 20, 0.15);
+        transition: right 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         align-items: flex-start;
+        z-index: 999;
     }
     
     .nav-menu.active {
@@ -988,23 +1042,75 @@ a {
     .nav-links {
         flex-direction: column;
         gap: 20px;
+        width: 100%;
+    }
+    
+    /* Staggered fade-in animation for menu items */
+    .nav-menu.active .nav-links li {
+        animation: slideInRight 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .nav-menu.active .nav-links li:nth-child(1) { animation-delay: 0.1s; }
+    .nav-menu.active .nav-links li:nth-child(2) { animation-delay: 0.2s; }
+    .nav-menu.active .nav-links li:nth-child(3) { animation-delay: 0.3s; }
+    .nav-menu.active .nav-links li:nth-child(4) { animation-delay: 0.4s; }
+    
+    .nav-menu.active .nav-cta {
+        animation: slideInRight 0.5s ease forwards 0.5s;
+        opacity: 0;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
     
     .hamburger {
         display: flex;
     }
     
+    /* Reposition carousel controls on tablets */
     .carousel-control {
         width: 40px;
         height: 40px;
+        top: auto;
+        bottom: 150px;
     }
     
     .carousel-control.prev {
-        left: 15px;
+        left: 20%;
     }
     
     .carousel-control.next {
-        right: 15px;
+        right: 20%;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Hide carousel controls on mobile, show indicators only */
+    .carousel-control {
+        display: none;
+    }
+    
+    /* Make indicators larger and more prominent on mobile */
+    .carousel-indicators {
+        bottom: 140px;
+    }
+    
+    .indicator {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .indicator.active {
+        width: 25px;
     }
 }
 

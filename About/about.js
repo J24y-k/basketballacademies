@@ -106,7 +106,7 @@ const animateCounter = (element, target) => {
 
 // Counter for stats (adjust numbers based on actual stats)
 document.querySelectorAll('.stat-number').forEach((stat, index) => {
-    const numbers = [200, 15, 1]; // 200+ students, 15+ coaches, 1 location
+    const numbers = [80, 5, 1]; // 200+ students, 15+ coaches, 1 location
     ScrollTrigger.create({
         trigger: stat,
         start: 'top 85%',
