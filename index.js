@@ -289,144 +289,254 @@ console.log('%c Basketball Academy Website ', 'background: #5B0E14; color: #F1E1
 console.log('%c Developed by Jay K | jeremiahkazadi9@gmail.com ', 'background: #F1E194; color: #5B0E14; font-size: 12px; padding: 5px;');
 
 // ============================================
-// GOOGLE CALENDAR INTEGRATION FOR EVENTS
+//  GOOGLE SHEETS EVENTS SYSTEM
 // ============================================
 
-/*
-HOW IT WORKS:
-1. Client creates/updates events in Google Calendar
-2. Makes calendar public with specific sharing settings
-3. Gets Calendar ID
-4. Paste Calendar ID below
-5. Website automatically pulls events and displays them
-
-SETUP INSTRUCTIONS FOR CLIENT:
-1. Go to Google Calendar (calendar.google.com)
-2. Create a new calendar called "Basketball Academy Events"
-3. Add events with:
-   - Title
-   - Date
-   - Time
-   - Location
-   - Description
-4. Make calendar public:
-   - Settings → Share with specific people → Make available to public
-5. Get Calendar ID:
-   - Settings → Integrate calendar → Calendar ID
-   - Example: abc123@group.calendar.google.com
-6. Paste Calendar ID in the variable below
-*/
+const GOOGLE_SHEET_ID = '1uR5wM6vYNhFZH4wouNiPucn8a-yN_8bxcTOk_h3hrrs'; // ← Your Sheet ID
 
 // ============================================
-// CONFIGURATION
+// DEFAULT EVENTS (FALLBACK)
 // ============================================
 
-// PASTE YOUR GOOGLE CALENDAR ID HERE
-const CALENDAR_ID = 'https://calendar.google.com/calendar/embed?src=0a12742a00dfd19247529f47d24a1c25f6b5636d597f29a5ed73f565f4b8627f%40group.calendar.google.com&ctz=Africa%2FJohannesburg';
-
-// PASTE YOUR GOOGLE API KEY HERE (Free - get from Google Cloud Console)
-const API_KEY = 'AIzaSyAq82AoypW1_AdSRmM4V24eLfB8wIwEeRM';
-
-// Number of events to display
-const MAX_EVENTS = 3;
+const DEFAULT_EVENTS = [
+    {
+        month: 'MAR',
+        day: '15',
+        title: 'Open Day - Mid-Year',
+        location: 'Crawford International Sandton College, Waterstone Drive',
+        time: '9:00 AM - 1:00 PM',
+        description: 'Experience our academy! Free trial sessions for all age groups. Meet our coaches, tour the facilities, and see our training programs in action.'
+    },
+    {
+        month: 'ONGOING',
+        day: '<i class="fas fa-basketball-ball"></i>',
+        title: 'League Competitions',
+        location: 'Various Locations - Johannesburg',
+        time: 'Weekends',
+        description: 'Our players compete in Jr. NBA JHB League (U14) and Eagles League (U7-U18). Check schedule for upcoming games and support our teams!'
+    },
+    {
+        month: 'SEP',
+        day: '20',
+        title: 'Open Day - End of Year',
+        location: 'Crawford International Sandton College, Waterstone Drive',
+        time: '9:00 AM - 1:00 PM',
+        description: 'Join our second annual Open Day! Free sessions, skills challenges, and registration for the upcoming season. Great opportunity for new players to join!'
+    }
+];
 
 // ============================================
-// FETCH EVENTS FROM GOOGLE CALENDAR
+// FETCH FROM GOOGLE SHEETS
 // ============================================
 
-async function fetchCalendarEvents() {
+async function fetchSheetEvents() {
+    if (!GOOGLE_SHEET_ID || GOOGLE_SHEET_ID.trim() === '') {
+        console.log('📊 No Google Sheet configured - using default events');
+        return null;
+    }
+    
     try {
-        // Build Google Calendar API URL
-        const now = new Date().toISOString();
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?key=${API_KEY}&timeMin=${now}&maxResults=${MAX_EVENTS}&singleEvents=true&orderBy=startTime`;
+        const csvURL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=0`;
         
-        const response = await fetch(url);
+        console.log('📊 Fetching from Google Sheet...');
+        console.log('📍 URL:', csvURL);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(csvURL, { 
+            signal: controller.signal,
+            mode: 'cors'
+        });
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
-            throw new Error('Failed to fetch calendar events');
+            console.error('❌ Sheet fetch failed:', response.status, response.statusText);
+            throw new Error(`HTTP ${response.status}`);
         }
         
-        const data = await response.json();
-        return data.items || [];
+        const csvText = await response.text();
+        console.log('✅ Raw CSV received, length:', csvText.length);
+        console.log('📄 First 200 chars:', csvText.substring(0, 200));
+        
+        return parseFlexibleCSV(csvText);
         
     } catch (error) {
-        console.error('Error fetching calendar events:', error);
+        console.error('❌ Fetch error:', error.message);
         return null;
     }
 }
 
 // ============================================
-// RENDER EVENTS ON PAGE
+// FLEXIBLE CSV PARSER
+// Detects column format automatically!
 // ============================================
 
-function renderEvents(events) {
-    const eventsGrid = document.querySelector('.events-grid');
+function parseFlexibleCSV(csvText) {
+    const lines = csvText.trim().split('\n').filter(line => line.trim());
     
-    if (!eventsGrid) {
-        console.error('Events grid not found');
-        return;
+    if (lines.length < 2) {
+        console.error('⚠️ Sheet empty or invalid');
+        return null;
     }
     
-    // Clear existing events
-    eventsGrid.innerHTML = '';
+    // Parse header to detect columns
+    const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+    console.log('📋 Detected columns:', headers);
     
-    if (!events || events.length === 0) {
-        eventsGrid.innerHTML = `
-            <div class="no-events">
-                <p><i class="fas fa-calendar-times"></i> No upcoming events at the moment. Check back soon!</p>
-            </div>
-        `;
-        return;
+    // Find column indices (flexible!)
+    const cols = {
+        date: headers.findIndex(h => h.includes('date')),
+        month: headers.findIndex(h => h.includes('month')),
+        day: headers.findIndex(h => h.includes('day')),
+        title: headers.findIndex(h => h.includes('title')),
+        location: headers.findIndex(h => h.includes('location')),
+        time: headers.findIndex(h => h.includes('time')),
+        description: headers.findIndex(h => h.includes('description') || h.includes('desc'))
+    };
+    
+    console.log('🔍 Column mapping:', cols);
+    
+    // Parse data rows
+    const events = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        try {
+            const row = parseCSVLine(lines[i]);
+            
+            if (row.length < 3) {
+                console.warn(`⚠️ Row ${i} too short, skipping`);
+                continue;
+            }
+            
+            let month, day;
+            
+            // If there's a "Date" column, parse it
+            if (cols.date >= 0 && row[cols.date]) {
+                const dateStr = row[cols.date].trim();
+                const dateParsed = parseDateString(dateStr);
+                month = dateParsed.month;
+                day = dateParsed.day;
+            } 
+            // Otherwise use Month + Day columns
+            else {
+                month = cols.month >= 0 ? row[cols.month]?.trim() : '';
+                day = cols.day >= 0 ? row[cols.day]?.trim() : '';
+            }
+            
+            const event = {
+                month: month || 'TBA',
+                day: day || '?',
+                title: cols.title >= 0 ? row[cols.title]?.trim() : 'Event',
+                location: cols.location >= 0 ? row[cols.location]?.trim() : 'TBA',
+                time: cols.time >= 0 ? row[cols.time]?.trim() : 'TBA',
+                description: cols.description >= 0 ? row[cols.description]?.trim() : ''
+            };
+            
+            // Only add if has title
+            if (event.title && event.title !== '') {
+                events.push(event);
+                console.log(`✅ Parsed: ${event.title}`);
+            }
+            
+        } catch (err) {
+            console.warn(`⚠️ Error parsing row ${i}:`, err.message);
+        }
     }
     
-    // Render each event
-    events.forEach(event => {
-        const eventCard = createEventCard(event);
-        eventsGrid.appendChild(eventCard);
-    });
+    console.log(`✅ Successfully parsed ${events.length} events`);
+    return events.length > 0 ? events : null;
 }
 
 // ============================================
-// CREATE EVENT CARD HTML
+// PARSE DATE STRING TO MONTH/DAY
+// ============================================
+
+function parseDateString(dateStr) {
+    // Try different date formats
+    
+    // Format: "February 14th 2025" or "Februray 14th 2025"
+    const longFormat = dateStr.match(/(\w+)\s+(\d+)/);
+    if (longFormat) {
+        const monthName = longFormat[1];
+        const day = longFormat[2];
+        
+        // Convert month name to abbreviation
+        const months = {
+            'january': 'JAN', 'jan': 'JAN',
+            'february': 'FEB', 'februray': 'FEB', 'feb': 'FEB',
+            'march': 'MAR', 'mar': 'MAR',
+            'april': 'APR', 'apr': 'APR',
+            'may': 'MAY',
+            'june': 'JUN', 'jun': 'JUN',
+            'july': 'JUL', 'jul': 'JUL',
+            'august': 'AUG', 'aug': 'AUG',
+            'september': 'SEP', 'sep': 'SEP', 'sept': 'SEP',
+            'october': 'OCT', 'oct': 'OCT',
+            'november': 'NOV', 'nov': 'NOV',
+            'december': 'DEC', 'dec': 'DEC'
+        };
+        
+        const month = months[monthName.toLowerCase()] || monthName.substring(0, 3).toUpperCase();
+        return { month, day };
+    }
+    
+    // Format: "2025-02-14" or "14/02/2025"
+    const isoFormat = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (isoFormat) {
+        const monthNum = parseInt(isoFormat[2]);
+        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        return { month: months[monthNum - 1], day: isoFormat[3] };
+    }
+    
+    // Default: use as-is
+    return { month: dateStr, day: '' };
+}
+
+// ============================================
+// PARSE CSV LINE (handles quotes and commas)
+// ============================================
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result.map(s => s.replace(/^"|"$/g, ''));
+}
+
+// ============================================
+// CREATE EVENT CARD
 // ============================================
 
 function createEventCard(event) {
     const card = document.createElement('div');
     card.className = 'event-card';
     
-    // Parse date
-    const startDate = event.start.dateTime ? new Date(event.start.dateTime) : new Date(event.start.date);
-    const month = startDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-    const day = startDate.getDate();
-    
-    // Parse time
-    let timeString = '';
-    if (event.start.dateTime) {
-        const startTime = startDate.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        const endDate = event.end.dateTime ? new Date(event.end.dateTime) : null;
-        const endTime = endDate ? endDate.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
-        timeString = endTime ? `${startTime} - ${endTime}` : startTime;
-    } else {
-        timeString = 'All Day';
-    }
-    
-    // Get location or use default
-    const location = event.location || 'Crawford International Sandton College, Waterstone Drive';
-    
-    // Get description or use default
-    const description = event.description || event.summary;
-    
-    // Build card HTML
     card.innerHTML = `
         <div class="event-date">
-            <span class="month">${month}</span>
-            <span class="day">${day}</span>
+            <span class="month">${event.month}</span>
+            <span class="day">${event.day}</span>
         </div>
         <div class="event-content">
-            <h3>${event.summary}</h3>
-            <p class="event-location"><i class="fas fa-map-marker-alt"></i> ${location}</p>
-            <p class="event-time"><i class="far fa-clock"></i> ${timeString}</p>
-            <p class="event-description">${description}</p>
+            <h3>${event.title}</h3>
+            <p class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+            <p class="event-time"><i class="far fa-clock"></i> ${event.time}</p>
+            <p class="event-description">${event.description}</p>
             <a href="Contact/contact.html" class="event-link">Register Now <i class="fas fa-arrow-right"></i></a>
         </div>
     `;
@@ -435,48 +545,110 @@ function createEventCard(event) {
 }
 
 // ============================================
-// INITIALIZE CALENDAR INTEGRATION
+// RENDER EVENTS
 // ============================================
 
-async function initCalendarEvents() {
-    // Check if API key and Calendar ID are configured
-    if (CALENDAR_ID === 'YOUR_CALENDAR_ID@group.calendar.google.com' || 
-        API_KEY === 'YOUR_API_KEY_HERE') {
-        console.log('Google Calendar not configured yet. Using default events.');
+function renderEvents(events) {
+    const eventsGrid = document.querySelector('.events-grid');
+    
+    if (!eventsGrid) {
+        console.error('❌ Events grid not found');
         return;
     }
     
-    // Show loading state
-    const eventsGrid = document.querySelector('.events-grid');
-    if (eventsGrid) {
-        eventsGrid.innerHTML = '<div class="loading-events"><i class="fas fa-spinner fa-spin"></i> Loading events...</div>';
+    eventsGrid.innerHTML = '';
+    
+    if (!events || events.length === 0) {
+        eventsGrid.innerHTML = `
+            <div class="no-events">
+                <i class="fas fa-calendar-times"></i>
+                <p>No upcoming events at the moment.<br>Check back soon!</p>
+            </div>
+        `;
+        console.log('📅 No events to display');
+        return;
     }
     
-    // Fetch and render events
-    const events = await fetchCalendarEvents();
+    events.forEach(event => {
+        eventsGrid.appendChild(createEventCard(event));
+    });
     
-    if (events) {
-        renderEvents(events);
-    } else {
-        // If fetch fails, keep default events
-        console.log('Using default events due to fetch error');
-    }
+    console.log(`✅ Displayed ${events.length} events`);
 }
 
 // ============================================
-// RUN ON PAGE LOAD
+// RENDER DEFAULT EVENTS
+// ============================================
+
+function renderNoEventsMessage() {
+    const eventsGrid = document.querySelector('.events-grid');
+
+    eventsGrid.innerHTML = `
+        <div class="no-events">
+            <i class="fas fa-calendar-alt"></i>
+            <p>
+                No upcoming events scheduled right now.<br>
+                New sessions and open days will be announced soon.
+            </p>
+        </div>
+    `;
+    
+    console.log('📅 No events in sheet');
+}
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+async function initEvents() {
+    const eventsGrid = document.querySelector('.events-grid');
+    
+    if (!eventsGrid) {
+        console.error('❌ Events grid not found');
+        return;
+    }
+    
+    // If no sheet connected at all
+    if (!GOOGLE_SHEET_ID || GOOGLE_SHEET_ID.trim() === '') {
+        renderNoEventsMessage();
+        return;
+    }
+    
+    // Loading state
+    eventsGrid.innerHTML = `
+        <div class="loading-events">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading upcoming events...</p>
+        </div>
+    `;
+    
+    const events = await fetchSheetEvents();
+    
+    if (events && events.length > 0) {
+        renderEvents(events);
+    } else {
+        // If sheet exists but empty
+        renderNoEventsMessage();
+    }
+}
+
+
+// ============================================
+// RUN ON LOAD
 // ============================================
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCalendarEvents);
+    document.addEventListener('DOMContentLoaded', initEvents);
 } else {
-    initCalendarEvents();
+    initEvents();
 }
 
-// ============================================
-// EXPORT FOR TESTING
-// ============================================
+// Manual refresh for testing
+window.refreshEvents = () => {
+    console.log('🔄 Refreshing...');
+    initEvents();
+};
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { fetchCalendarEvents, renderEvents, createEventCard };
-}
+console.log('📊 Events system loaded');
+console.log('🔧 Sheet ID:', GOOGLE_SHEET_ID || 'Not configured');
+console.log('💡 Type refreshEvents() to reload');
