@@ -4,6 +4,34 @@
 @import url('../index-style.css');
 
 /* ============================================
+   GLOBAL OVERFLOW FIX
+   ============================================ */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Ensure container doesn't overflow */
+.container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+        width: 100%;
+    }
+}
+
+/* ============================================
    PAGE HEADER
    ============================================ */
 .page-header {
@@ -81,14 +109,20 @@
     grid-template-columns: 1fr 1fr;
     gap: 60px;
     align-items: center;
+    width: 100%;
+    max-width: 100%;
 }
 
 .story-image {
     position: relative;
+    width: 100%;
+    max-width: 100%;
 }
 
 .story-image img {
     width: 100%;
+    max-width: 100%;
+    height: auto;
     border-radius: 10px;
     box-shadow: 0 10px 40px rgba(91, 14, 20, 0.2);
 }
@@ -103,6 +137,7 @@
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 5px 20px rgba(91, 14, 20, 0.4);
+    max-width: calc(100% - 60px);
 }
 
 .experience-badge .number {
@@ -198,8 +233,10 @@
 
 .mvv-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .mvv-card {
@@ -209,6 +246,8 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     transition: var(--transition-smooth);
     border-top: 4px solid var(--burgundy);
+    width: 100%;
+    max-width: 100%;
 }
 
 .mvv-card:hover {
@@ -268,8 +307,10 @@
 
 .offerings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .offering-card {
@@ -279,6 +320,8 @@
     border: 2px solid var(--light-gray);
     transition: var(--transition-smooth);
     text-align: center;
+    width: 100%;
+    max-width: 100%;
 }
 
 .offering-card:hover {
@@ -318,6 +361,7 @@
 .why-choose-section {
     padding: var(--section-padding);
     background-color: var(--light-gray);
+    overflow-x: hidden;
 }
 
 .why-grid {
@@ -325,6 +369,8 @@
     grid-template-columns: 1.2fr 1fr;
     gap: 60px;
     align-items: center;
+    width: 100%;
+    max-width: 100%;
 }
 
 .why-list {
@@ -332,12 +378,15 @@
     flex-direction: column;
     gap: 25px;
     margin-top: 30px;
+    width: 100%;
 }
 
 .why-item {
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
 }
 
 .why-number {
@@ -346,6 +395,12 @@
     font-weight: 700;
     color: var(--gold);
     min-width: 50px;
+    flex-shrink: 0;
+}
+
+.why-text {
+    flex: 1;
+    min-width: 0;
 }
 
 .why-text h3 {
@@ -353,19 +408,25 @@
     font-size: 22px;
     color: var(--burgundy);
     margin-bottom: 10px;
+    word-wrap: break-word;
 }
 
 .why-text p {
     color: var(--gray);
     line-height: 1.7;
+    word-wrap: break-word;
 }
 
 .why-image {
     position: relative;
+    width: 100%;
+    max-width: 100%;
 }
 
 .why-image img {
     width: 100%;
+    max-width: 100%;
+    height: auto;
     border-radius: 10px;
     box-shadow: 0 10px 40px rgba(91, 14, 20, 0.2);
 }
@@ -382,16 +443,19 @@
     align-items: center;
     gap: 15px;
     box-shadow: 0 5px 20px rgba(91, 14, 20, 0.4);
+    max-width: calc(100% - 60px);
 }
 
 .image-badge i {
     font-size: 32px;
     color: var(--gold);
+    flex-shrink: 0;
 }
 
 .image-badge span {
     font-weight: 600;
     font-size: 16px;
+    word-wrap: break-word;
 }
 
 /* ============================================
@@ -400,12 +464,15 @@
 .testimonials-section {
     padding: var(--section-padding);
     background-color: var(--white);
+    overflow-x: hidden;
 }
 
 .testimonials-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .testimonial-card {
@@ -414,6 +481,8 @@
     border-radius: 10px;
     position: relative;
     transition: var(--transition-smooth);
+    width: 100%;
+    max-width: 100%;
 }
 
 .testimonial-card:hover {
@@ -499,20 +568,35 @@
     
     .story-stats {
         grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
     }
 }
 
 @media (max-width: 768px) {
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden !important;
+    }
+    
+    .container {
+        padding: 0 15px !important;
+        max-width: 100% !important;
+    }
+    
     .page-header {
         height: 300px;
+        width: 100%;
+        overflow: hidden;
     }
     
     .page-header h1 {
         font-size: 36px;
+        padding: 0 15px;
     }
     
     .page-header p {
         font-size: 18px;
+        padding: 0 15px;
     }
     
     .story-content h2,
@@ -526,34 +610,98 @@
     
     .story-stats {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
+    .stat-item {
+        padding: 20px 15px;
+    }
+    
+    /* Fix grids on mobile */
     .mvv-grid,
     .offerings-grid,
     .testimonials-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
     
+    .mvv-card,
+    .offering-card,
+    .testimonial-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 30px 20px;
+    }
+    
+    /* Fix badges */
     .experience-badge {
-        bottom: 20px;
-        right: 20px;
-        padding: 20px;
+        bottom: 15px;
+        right: 15px;
+        padding: 15px 20px;
+        max-width: calc(100% - 30px);
     }
     
     .experience-badge .number {
-        font-size: 32px;
+        font-size: 28px;
+    }
+    
+    .experience-badge .text {
+        font-size: 12px;
     }
     
     .image-badge {
         position: static;
         margin-bottom: 20px;
         justify-content: center;
+        max-width: 100%;
+    }
+    
+    /* Fix why items */
+    .why-item {
+        gap: 15px;
+    }
+    
+    .why-number {
+        font-size: 32px;
+        min-width: 45px;
+    }
+    
+    .why-text h3 {
+        font-size: 20px;
     }
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 15px !important;
+    }
+    
+    .page-header {
+        height: 250px;
+    }
+    
     .page-header h1 {
         font-size: 28px;
+        padding: 0 10px;
+    }
+    
+    .page-header p {
+        font-size: 16px;
+        padding: 0 10px;
+    }
+    
+    .breadcrumb {
+        font-size: 14px;
+        flex-wrap: wrap;
+        padding: 0 10px;
+    }
+    
+    .story-content h2 {
+        font-size: 26px;
+    }
+    
+    .story-content .lead {
+        font-size: 16px;
     }
     
     .why-number {
@@ -563,5 +711,33 @@
     
     .why-text h3 {
         font-size: 18px;
+    }
+    
+    .why-item {
+        gap: 12px;
+    }
+    
+    /* Extra small padding for cards */
+    .mvv-card,
+    .offering-card,
+    .testimonial-card {
+        padding: 25px 15px;
+    }
+    
+    .mvv-icon,
+    .offering-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+    
+    .experience-badge {
+        bottom: 10px;
+        right: 10px;
+        padding: 12px 15px;
+    }
+    
+    .experience-badge .number {
+        font-size: 24px;
     }
 }

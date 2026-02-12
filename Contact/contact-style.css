@@ -4,6 +4,34 @@
 @import url('../index-style.css');
 
 /* ============================================
+   GLOBAL OVERFLOW FIX
+   ============================================ */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Ensure container doesn't overflow */
+.container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+        width: 100%;
+    }
+}
+
+/* ============================================
    PAGE HEADER
    ============================================ */
 .page-header {
@@ -74,12 +102,15 @@
 .contact-info-section {
     padding: 80px 0 40px;
     background-color: var(--white);
+    overflow-x: hidden;
 }
 
 .contact-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 30px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .contact-card {
@@ -89,6 +120,8 @@
     padding: 35px 25px;
     text-align: center;
     transition: var(--transition-smooth);
+    width: 100%;
+    max-width: 100%;
 }
 
 .contact-card:hover {
@@ -161,6 +194,7 @@
 .form-map-section {
     padding: 40px 0 80px;
     background-color: var(--light-gray);
+    overflow-x: hidden;
 }
 
 .form-map-grid {
@@ -168,6 +202,8 @@
     grid-template-columns: 1.5fr 1fr;
     gap: 50px;
     align-items: start;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Form Container */
@@ -176,6 +212,8 @@
     border-radius: 10px;
     padding: 50px;
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 100%;
 }
 
 .form-header {
@@ -255,6 +293,8 @@
     border-radius: 8px;
     margin: 10px 0;
     border-left: 4px solid var(--gold);
+    width: 100%;
+    max-width: 100%;
 }
 
 .child-info-section h3 {
@@ -265,10 +305,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    word-wrap: break-word;
 }
 
 .child-info-section h3 i {
     color: var(--gold);
+    flex-shrink: 0;
 }
 
 /* Submit Button */
@@ -338,6 +380,8 @@
     display: flex;
     flex-direction: column;
     gap: 25px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .map-wrapper,
@@ -347,6 +391,8 @@
     border-radius: 10px;
     padding: 30px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 100%;
 }
 
 .map-wrapper h3,
@@ -359,18 +405,27 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    word-wrap: break-word;
 }
 
 .map-wrapper h3 i,
 .quick-info h3 i,
 .social-connect h3 i {
     color: var(--gold);
+    flex-shrink: 0;
 }
 
 .map-embed {
     border-radius: 8px;
     overflow: hidden;
     border: 2px solid var(--light-gray);
+    width: 100%;
+    max-width: 100%;
+}
+
+.map-embed iframe {
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Quick Info List */
@@ -455,12 +510,14 @@
 .faq-section {
     padding: var(--section-padding);
     background-color: var(--white);
+    overflow-x: hidden;
 }
 
 .faq-grid {
     display: grid;
     gap: 20px;
     max-width: 900px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -470,6 +527,8 @@
     border-radius: 8px;
     overflow: hidden;
     transition: var(--transition-smooth);
+    width: 100%;
+    max-width: 100%;
 }
 
 .faq-item.active {
@@ -483,6 +542,7 @@
     padding: 25px 30px;
     cursor: pointer;
     transition: var(--transition-smooth);
+    width: 100%;
 }
 
 .faq-question:hover {
@@ -494,12 +554,17 @@
     font-size: 20px;
     color: var(--burgundy);
     margin: 0;
+    word-wrap: break-word;
+    flex: 1;
+    min-width: 0;
 }
 
 .faq-question i {
     color: var(--burgundy);
     font-size: 18px;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 15px;
 }
 
 .faq-item.active .faq-question i {
@@ -510,6 +575,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease, padding 0.4s ease;
+    width: 100%;
 }
 
 .faq-item.active .faq-answer {
@@ -521,6 +587,7 @@
     color: var(--gray);
     line-height: 1.8;
     font-size: 16px;
+    word-wrap: break-word;
 }
 
 /* ============================================
@@ -533,28 +600,52 @@
     
     .form-map-grid {
         grid-template-columns: 1fr;
+        gap: 30px;
     }
     
     .contact-cards {
         grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 }
 
 @media (max-width: 768px) {
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden !important;
+    }
+    
+    .container {
+        padding: 0 15px !important;
+        max-width: 100% !important;
+    }
+    
     .page-header {
         height: 300px;
+        width: 100%;
+        overflow: hidden;
     }
     
     .page-header h1 {
         font-size: 36px;
+        padding: 0 15px;
     }
     
     .page-header p {
         font-size: 18px;
+        padding: 0 15px;
     }
     
+    .breadcrumb {
+        padding: 0 15px;
+        flex-wrap: wrap;
+    }
+    
+    /* Form fixes */
     .form-container {
-        padding: 30px 25px;
+        padding: 30px 20px;
+        width: 100%;
+        max-width: 100%;
     }
     
     .form-header h2 {
@@ -563,35 +654,166 @@
     
     .form-row {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Contact cards */
     .contact-cards {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
     
+    .contact-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 30px 20px;
+    }
+    
+    /* Map container */
+    .map-wrapper,
+    .quick-info,
+    .social-connect {
+        padding: 25px 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Social buttons */
     .social-buttons {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* Child info section */
+    .child-info-section {
+        padding: 25px 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* FAQ */
+    .faq-question {
+        padding: 20px 15px;
+    }
+    
+    .faq-item.active .faq-answer {
+        padding: 0 15px 20px;
     }
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 15px !important;
+    }
+    
+    .page-header {
+        height: 250px;
+    }
+    
     .page-header h1 {
         font-size: 28px;
+        padding: 0 10px;
     }
     
+    .page-header p {
+        font-size: 16px;
+        padding: 0 10px;
+    }
+    
+    .breadcrumb {
+        font-size: 14px;
+        padding: 0 10px;
+    }
+    
+    /* Form */
     .form-container {
-        padding: 25px 20px;
+        padding: 25px 15px;
     }
     
+    .form-header h2 {
+        font-size: 24px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .btn-submit {
+        padding: 15px 30px;
+        font-size: 16px;
+        width: 100%;
+    }
+    
+    /* Child info */
     .child-info-section {
-        padding: 20px;
+        padding: 20px 15px;
     }
     
+    .child-info-section h3 {
+        font-size: 18px;
+    }
+    
+    /* Contact cards */
+    .contact-card {
+        padding: 25px 15px;
+    }
+    
+    .contact-card h3 {
+        font-size: 20px;
+    }
+    
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    /* Map and info */
+    .map-wrapper,
+    .quick-info,
+    .social-connect {
+        padding: 20px 15px;
+    }
+    
+    .map-wrapper h3,
+    .quick-info h3,
+    .social-connect h3 {
+        font-size: 18px;
+    }
+    
+    .quick-info li {
+        gap: 12px;
+    }
+    
+    .quick-info li i {
+        font-size: 18px;
+    }
+    
+    /* FAQ */
     .faq-question {
-        padding: 20px;
+        padding: 18px 15px;
     }
     
     .faq-question h3 {
-        font-size: 17px;
+        font-size: 16px;
+    }
+    
+    .faq-question i {
+        font-size: 16px;
+        margin-left: 10px;
+    }
+    
+    .faq-answer p {
+        font-size: 14px;
     }
 }
