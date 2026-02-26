@@ -1,0 +1,57 @@
+{
+  "name": "Basketball Academy Sandton & Centurion | Youth Training Programs",
+  "short_name": "Basketball Academy",
+  "description": "Premier youth basketball academy in Sandton and Centurion offering structured training programs for boys and girls aged 6-18. Professional coaching, league participation, and life skills development.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "en-ZA",
+  "background_color": "#ffffff",
+  "theme_color": "#5B0E14",
+  "categories": ["sports", "education", "fitness"],
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Enroll Now",
+      "short_name": "Join",
+      "url": "/Contact/contact.html",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "View Programs",
+      "short_name": "Programs",
+      "url": "/About/about.html",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
