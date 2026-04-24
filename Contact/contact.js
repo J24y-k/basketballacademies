@@ -242,7 +242,7 @@ contactForm.addEventListener('submit', function(e) {
     }
     
     // WhatsApp number (TEST: 0832688029, PRODUCTION: 0839682191)
-    const whatsappNumber = '27745192332'; // Change to '27839682191' for production
+    const whatsappNumber = '27839682191'; 
     
     // Encode message for URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
